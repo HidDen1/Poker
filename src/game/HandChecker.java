@@ -11,13 +11,13 @@ public class HandChecker {
         this.hand = hand;
     }
     /**
-     * @param i Start position; 0 for low, size - 1 for high
+     * @param i Start position; 0 for low, size - 2 for high
      * @param j Inc/Dec amt; 1 for low, -1 for high
      * @return whether a straight exists or not
      */
     public boolean checkStraight(int i, int j){
         if(hand.get(i).getValue()[0] + 1 == hand.get(i + 1).getValue()[0]){
-            if(i == hand.size() - 2)
+            if((i == hand.size() - 2 && j == 1) || (i == 0 && j == -1))
                 return true;
             return checkStraight(i + j, j);
         }
@@ -74,7 +74,7 @@ public class HandChecker {
         if(hand.get(i).getType().equals(hand.get(i + 1).getType())){
             if(i == hand.size() - 2)
                 return true;
-            return checkFlush(i++);
+            return checkFlush(++i);
         }
         return false;
     }
@@ -104,8 +104,9 @@ public class HandChecker {
         if(hand.get(i).getValue()[0] == hand.get(i + 1).getValue()[0]){
             if(i == size - 2)
                 return true;
-            return checkKind(size, i++);
-        }
-        return false;
+            else
+                return checkKind(size, ++i);
+        } else
+            return false;
     }
 }

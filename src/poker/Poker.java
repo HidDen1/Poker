@@ -66,6 +66,7 @@ public abstract class Poker {
 				toDeal.add(deck.remove(deck.size() - 1));
 			}
 			i.dealTo(toDeal);
+			i.showHand();
 		}
 	}
 	/**
@@ -87,8 +88,8 @@ public abstract class Poker {
 	 * TO BE MADE PROTECTED; FOR DEBUG
 	 */
 	public ArrayList<Card> getDeck(){ return(deck); }
-
-    protected Player getUser(int i){ return users[i]; }
+	//TODO MAKE PROTECTED
+    public Player getUser(int i){ return users[i]; }
 
     protected int getUserAmount(){ return users.length; }
 

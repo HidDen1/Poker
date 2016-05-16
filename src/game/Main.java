@@ -20,6 +20,8 @@ public class Main {
 		//game.playGame();
         game.shuffle();
 		game.dealToPlayers(5);
+		System.out.println(game.getUser(0).checkHand());
+        System.out.println(game.getUser(1).checkHand());
 
 	}
  	/**

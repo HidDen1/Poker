@@ -54,25 +54,26 @@ public class Player {
 
     public String checkHand() {
         HandChecker checkers = new HandChecker(hand);
+        boolean hasAce = checkers.hasAce() != -1, kinds;
         String ayy = "";
-        boolean hasAce = checkers.hasAce() != -1, kinds = false;
         int i = 0, size = 2, j = 0, sub = 2;
+        checkers.orderCards(hasAce);
         //change to other loop to check for kinds if they are more in the middle of the hand
         do{
             kinds = checkers.checkKind(size, j);
-            if(size == 2 && kinds){
+            if(size - j == 2 && kinds){
                 if(checkers.checkKind(4, 2)){
                     ayy = checkers.highCard(hasAce) + "two pair";
                 } else {
-                    ayy = checkers.highCard(hasAce) + "pair";
+                    ayy = checkers.highCard(hasAce) +  "pair";
                 }
-            } else if (size == 3 && kinds){
+            } else if (size - j == 3 && kinds){
                 if(checkers.checkKind(5, 3)){
                     ayy = checkers.highCard(hasAce) + "full house";
                 } else {
                     ayy = checkers.highCard(hasAce) + "three of a kind";
                 }
-            } else if(size == 4 && kinds){
+            } else if(size - j == 4 && kinds){
                 ayy = checkers.highCard(hasAce) + "four of a kind";
             }
             if(size != 5) {
@@ -85,24 +86,34 @@ public class Player {
             }
         } while(sub != 0);
         if(checkers.checkFlush(0)){
-            ayy = checkers.highSuit() + "flush";
+            ayy = checkers.highCard(hasAce) + "." + checkers.highSuit() + "flush";
         }
         do {
-            if(i == 1)
+            if(i == 1) {
                 hasAce = false;
-            checkers.orderCards(hasAce);
+                checkers.orderCards(hasAce);
+            }
             //Make straight flush priority first
             if (checkers.checkStraight(0, 1)) {
-                ayy = checkers.highCard(hasAce) + "straight";
-            } else if (checkers.checkStraight(hand.size(), -1)) {
-                ayy = checkers.highCard(hasAce) + "straight";
+                if(ayy.contains("flush")){
+                    ayy = checkers.highCard(hasAce) + "." + checkers.highSuit() + "straight flush";
+                } else {
+                    ayy = checkers.highCard(hasAce) + "straight";
+                }
+            } else if (checkers.checkStraight(hand.size() - 2, -1)) {
+                if(ayy.contains("flush")){
+                    ayy = checkers.highCard(hasAce) + "." + checkers.highSuit() + "straight flush";
+                } else {
+                    ayy = checkers.highCard(hasAce) + "straight";
+                }
             }
             i++;
-        } while(hasAce);
-        return null;
+        } while(hasAce && !ayy.contains("straight"));
+        if(ayy.isEmpty()){
+            ayy = "" + checkers.highCard(hasAce);
+        }
+        return ayy;
     }
-
-
 
     //REMOVE LATER
     public void showHand(){
