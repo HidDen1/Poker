@@ -24,13 +24,11 @@ public class Player {
         return (cash);
     }
 
-    /**
-     * @param index The placement of the card to get
-     * @return A card from the player hand
-     */
-    public Card getFromHand(int index) {
-        return (hand.remove(index));
+    public ArrayList<Card> getHand() {
+        return (hand);
     }
+
+    public void killHand(){ hand.clear(); }
 
     /**
      * @param cards The cards to add to the player's hand
@@ -63,18 +61,18 @@ public class Player {
             kinds = checkers.checkKind(size, j);
             if(size - j == 2 && kinds){
                 if(checkers.checkKind(4, 2)){
-                    ayy = checkers.highCard(hasAce) + "two pair";
+                    ayy = checkers.highCard(hasAce) + "." + checkers.getPairVal() + "." + "G";
                 } else {
-                    ayy = checkers.highCard(hasAce) +  "pair";
+                    ayy = checkers.highCard(hasAce) + "." + checkers.getPairVal() + "." +  "H";
                 }
             } else if (size - j == 3 && kinds){
                 if(checkers.checkKind(5, 3)){
-                    ayy = checkers.highCard(hasAce) + "full house";
+                    ayy = checkers.highCard(hasAce) + "." + checkers.getPairVal() + "." + "C";
                 } else {
-                    ayy = checkers.highCard(hasAce) + "three of a kind";
+                    ayy = checkers.highCard(hasAce) + "." + checkers.getPairVal() + "." + "F";
                 }
             } else if(size - j == 4 && kinds){
-                ayy = checkers.highCard(hasAce) + "four of a kind";
+                ayy = checkers.highCard(hasAce) + "." + checkers.getPairVal() + "." + "B";
             }
             if(size != 5) {
                 size++;
@@ -85,32 +83,31 @@ public class Player {
                 sub--;
             }
         } while(sub != 0);
-        if(checkers.checkFlush(0)){
-            ayy = checkers.highCard(hasAce) + "." + checkers.highSuit() + "flush";
+        if(!ayy.contains("B") && checkers.checkFlush(0)){
+            ayy = checkers.highCard(hasAce) + "." + checkers.highSuit() + "." + "D";
         }
         do {
             if(i == 1) {
                 hasAce = false;
                 checkers.orderCards(hasAce);
             }
-            //Make straight flush priority first
             if (checkers.checkStraight(0, 1)) {
-                if(ayy.contains("flush")){
-                    ayy = checkers.highCard(hasAce) + "." + checkers.highSuit() + "straight flush";
-                } else {
-                    ayy = checkers.highCard(hasAce) + "straight";
+                if(ayy.contains("D")){
+                    ayy = checkers.highCard(hasAce) + "." + checkers.highSuit() + "." + "A";
+                } else if(!ayy.contains("B")){
+                    ayy = checkers.highCard(hasAce) + "." + "E";
                 }
             } else if (checkers.checkStraight(hand.size() - 2, -1)) {
-                if(ayy.contains("flush")){
-                    ayy = checkers.highCard(hasAce) + "." + checkers.highSuit() + "straight flush";
-                } else {
-                    ayy = checkers.highCard(hasAce) + "straight";
+                if(ayy.contains("D")){
+                    ayy = checkers.highCard(hasAce) + "." + checkers.highSuit() + "." + "A";
+                } else if(!ayy.contains("B")){
+                    ayy = checkers.highCard(hasAce) + "." + "E";
                 }
             }
             i++;
-        } while(hasAce && !ayy.contains("straight"));
+        } while(hasAce && (!ayy.contains("E") || !ayy.contains("A")));
         if(ayy.isEmpty()){
-            ayy = "" + checkers.highCard(hasAce);
+            ayy = checkers.highCard(hasAce) + "." + "I";
         }
         return ayy;
     }

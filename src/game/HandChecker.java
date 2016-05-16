@@ -5,7 +5,8 @@ import card.Card;
 import java.util.ArrayList;
 
 public class HandChecker {
-    ArrayList<Card> hand = new ArrayList<>();
+    private ArrayList<Card> hand = new ArrayList<>();
+    private int pairVal;
 
     public HandChecker(ArrayList<Card> hand){
         this.hand = hand;
@@ -102,11 +103,13 @@ public class HandChecker {
      */
     public boolean checkKind(int size, int i){
         if(hand.get(i).getValue()[0] == hand.get(i + 1).getValue()[0]){
-            if(i == size - 2)
+            if(i == size - 2) {
+                pairVal = hand.get(i).getValue()[0];
                 return true;
-            else
+            } else
                 return checkKind(size, ++i);
         } else
             return false;
     }
+    public int getPairVal(){ return pairVal; }
 }
