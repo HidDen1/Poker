@@ -5,24 +5,27 @@ import card.Card;
 import java.util.ArrayList;
 
 public class Player {
-    private int cash;
     private ArrayList<Card> hand = new ArrayList<Card>();
-    private boolean skip, out;
-    private double maxEarn;
+    private boolean skip, out, hasAce;
+    private double maxEarn, cash;
 
     /**
      * Sets the player's cash
      *
      * @param money Value to set the cash
      */
-    public void setCash(int money) {
+    public void setCash(double money) {
         cash = money;
     }
+
+    public boolean hasAce(){ return hasAce; }
+
+    public Card tradeOutCard(int i){ return hand.remove(i); }
 
     /**
      * Gets the player's cash
      */
-    public int getCash() {
+    public double getCash() {
         return (cash);
     }
 
@@ -38,25 +41,28 @@ public class Player {
     public void dealTo(ArrayList<Card> cards) {
         hand.addAll(cards);
     }
+    public void dealTo(Card card){ hand.add(card); }
 
     //possibly have these return things
-    public void call(int bet) {
+    public void call(double bet) {
         cash -= bet;
     }
+
+    public boolean isBankrupt(){ return cash == 0; }
 
     public ArrayList<Card> fold() {
         out = true;
         return hand;
     }
 
-    public int raise(int bet) {
+    public int raise(double bet) {
         int raise = Integer.parseInt(Main.getChoice("What would you like to raise the bet of " + bet + " too?"));
         cash -= raise;
         return raise;
     }
 
-    public int allIn(double pool){
-        int out = cash;
+    public double allIn(double pool){
+        double out = cash;
         cash = 0;
         maxEarn = out + pool;
         return out;
@@ -64,7 +70,8 @@ public class Player {
 
     public String checkHand() {
         HandChecker checkers = new HandChecker(hand);
-        boolean hasAce = checkers.hasAce() != -1, kinds;
+        hasAce = checkers.hasAce() != -1;
+        boolean kinds;
         String ayy = "";
         int i = 0, size = 2, j = 0, sub = 2;
         checkers.orderCards(hasAce);
@@ -133,4 +140,6 @@ public class Player {
     public boolean getSkip(){ return skip; }
     public void skip(){ skip = false; }
     public boolean getOut(){ return out; }
+    public double getMaxEarn(){ return maxEarn; }
+    public void setOut(boolean out){ this.out = out; }
 }

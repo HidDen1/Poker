@@ -15,16 +15,10 @@ public class Main {
 	
 	public static void main(String[] args){
         Poker game = createGame(Integer.parseInt(getChoice("What kind of poker will be played? (1: 5 card, 2: 5 card w/ wildcard, 3: Texas Hold-em")));
-		game.createPlayers(Integer.parseInt(getChoice("How many players will be in this poker? (up to 5)")));
-		//game.setMaxBet(Integer.parseInt(getChoice("What will be the max bet?")));
-		//game.playGame();
-        game.shuffle();
-		game.dealToPlayers(5);
-		System.out.println(game.getUser(0).checkHand());
-        System.out.println(game.getUser(1).checkHand());
-        System.out.println("I".compareTo("H"));
-		System.out.println(game.findWinner(game.getUser(0), game.getUser(1), 1).checkHand());
-
+		game.playGame();
+		//System.out.println(game.getUser(0).checkHand());
+        //System.out.println(game.getUser(1).checkHand());
+		//System.out.println(game.findWinner(game.getUser(0), game.getUser(1), 1).checkHand());
 	}
  	/**
 	 * @param prompt What the user will see and answer to

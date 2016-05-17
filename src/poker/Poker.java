@@ -11,8 +11,8 @@ import java.util.ArrayList;
 public abstract class Poker {
 	private ArrayList<Card> deck = new ArrayList<Card>();
 	private Player users[];
-	private int maxBet, game, turn, bet;
-    private double pool;
+	private int maxBet, game, turn;
+    private double pool, bet;
 	public Poker(){
 		for(int i = 1; i < 14; i++){
 			for(int j = 0; j < 4; j++){
@@ -23,9 +23,27 @@ public abstract class Poker {
 		}
 	}
 
+    public int isVictory(){
+        int got = 0, count = 0;
+        for(Player i : users){
+            if(!i.isBankrupt()) {
+                got = count;
+                count++;
+            }
+        }
+        if(count == 1){
+            return got;
+        } else
+            return -1;
+    }
+
     protected void changeTurn(int change){ turn = change; }
 
-	public abstract void playGame();
+	public void playGame(){
+        createPlayers(Integer.parseInt(Main.getChoice("How many players will be in this poker? (up to 5)")));
+        setMaxBet(Integer.parseInt(Main.getChoice("What will be the max bet?")));
+        setCash(Double.parseDouble(Main.getChoice("What should all player's starting cash be?")));
+    }
 	/**
 	 * Shuffles the Deck
 	 */
@@ -47,15 +65,6 @@ public abstract class Poker {
             users[i] = new Player();
     }
 	/**
-	 * Sets the player's starting cash
-	 * @param num The numerical value to set it to
-	 */
-	public void setTotal(int num){
-		for(int i = 0; i < users.length; i++){
-			users[i].setCash(num);
-		}
-	}
-	/**
 	 * Deals cards to the player
 	 */
 	public void dealToPlayers(int amt){
@@ -67,20 +76,27 @@ public abstract class Poker {
 				toDeal.add(deck.remove(deck.size() - 1));
 			}
 			i.dealTo(toDeal);
-			i.showHand();
 		}
 	}
 
-    protected void betPhase(int what){
-        int raised = -1;
+	public void dealOutWinnings(Player winner){
+		if(winner.getMaxEarn() != 0){
+            winner.setCash(winner.getCash() + winner.getMaxEarn());
+            pool = 0;
+        } else {
+            winner.setCash(winner.getCash() + pool);
+            pool = 0;
+        }
+	}
+
+    protected void betPhase(){
         if(users[getTurn()].getSkip()){
             changeTurn(getTurn() + 1);
             users[getTurn()].skip();
-            betPhase(Integer.parseInt(Main.getChoice("Player " + getTurn() + "'s turn. 1: Call; 2: Raise; 3: Fold")));
         } else if(users[getTurn()].getOut()){
             changeTurn(getTurn() + 1);
-            betPhase(Integer.parseInt(Main.getChoice("Player " + getTurn() + "'s turn. 1: Call; 2: Raise; 3: Fold")));
         }
+        int raised = -1, what = Integer.parseInt(Main.getChoice("Player " + getTurn() + "'s turn. You have " + users[getTurn()].getCash() + ". Your cards are: \n" + users[getTurn()].getHand().toString().substring(1, users[getTurn()].getHand().toString().length() -1) + "\nThe current bet is " + bet + "\n1: Call; 2: Raise; 3: Fold, 4: All in"));
         switch(what){
             case 1:
                 getUser(getTurn()).call(bet);
@@ -96,7 +112,7 @@ public abstract class Poker {
                 users[getTurn()].killHand();
                 break;
             case 4:
-                int all = users[getTurn()].allIn(pool);
+                double all = users[getTurn()].allIn(pool);
                 if (all > bet){
                     raised = getTurn();
                     bet = all;
@@ -104,15 +120,18 @@ public abstract class Poker {
                 pool += all;
                 break;
         }
+        System.out.println(getTurn() + "|" + getUserAmount());
         changeTurn(getTurn() + 1);
+        System.out.println(getTurn() + "|" + getUserAmount());
         if(raised != -1) {
             users[raised].setSkip();
             changeTurn(0);
         }
         if(getTurn() != getUserAmount())
-            betPhase(Integer.parseInt(Main.getChoice("Player " + getTurn() + "'s turn. 1: Call; 2: Raise; 3: Fold")));
+            betPhase();
         //else
             //doPartOne(Integer.parseInt(Main.getChoice("Player " + getTurn() + "'s turn. 1: Call; 2: Raise; 3: Fold")));
+        changeTurn(0);
     }
 
 	public Player findWinner(Player win, Player lose, int i){
@@ -167,6 +186,12 @@ public abstract class Poker {
 	 * @param g the poker to be set
 	 */
 	public void setGame(int g){ game = g; }
+
+    public void setCash(double c){
+        for(Player i : users){
+            i.setCash(c);
+        }
+    }
 
 	/**
 	 * TO BE MADE PROTECTED; FOR DEBUG

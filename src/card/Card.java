@@ -5,7 +5,7 @@ package card;
 public class Card {
 	private int[] value;
 	public static final String NAMES[] = {"Ace", "2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King"};
-	public static final String TYPES[] = {"S", "C", "H", "D"};
+	public static final String TYPES[] = {"Spades", "Clubs", "Hearts", "Diamonds"};
 	private String type, name;
 	/**
 	 * @param val The card's point worth. Also translates into its name.
@@ -46,5 +46,9 @@ public class Card {
 	
 	protected void setType(String type){
 		this.type = type;
+	}
+
+	public String toString(){
+		return name + " of " + type;
 	}
 }
