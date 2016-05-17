@@ -7,6 +7,8 @@ import java.util.ArrayList;
 public class Player {
     private int cash;
     private ArrayList<Card> hand = new ArrayList<Card>();
+    private boolean skip, out;
+    private double maxEarn;
 
     /**
      * Sets the player's cash
@@ -38,16 +40,26 @@ public class Player {
     }
 
     //possibly have these return things
-    public void call() {
-
+    public void call(int bet) {
+        cash -= bet;
     }
 
-    public void fold() {
-
+    public ArrayList<Card> fold() {
+        out = true;
+        return hand;
     }
 
-    public void raise() {
+    public int raise(int bet) {
+        int raise = Integer.parseInt(Main.getChoice("What would you like to raise the bet of " + bet + " too?"));
+        cash -= raise;
+        return raise;
+    }
 
+    public int allIn(double pool){
+        int out = cash;
+        cash = 0;
+        maxEarn = out + pool;
+        return out;
     }
 
     public String checkHand() {
@@ -84,7 +96,7 @@ public class Player {
             }
         } while(sub != 0);
         if(!ayy.contains("B") && checkers.checkFlush(0)){
-            ayy = checkers.highCard(hasAce) + "." + checkers.highSuit() + "." + "D";
+            ayy = checkers.highCard(hasAce) + "." + "D";
         }
         do {
             if(i == 1) {
@@ -93,13 +105,13 @@ public class Player {
             }
             if (checkers.checkStraight(0, 1)) {
                 if(ayy.contains("D")){
-                    ayy = checkers.highCard(hasAce) + "." + checkers.highSuit() + "." + "A";
+                    ayy = checkers.highCard(hasAce) + "." + "A";
                 } else if(!ayy.contains("B")){
                     ayy = checkers.highCard(hasAce) + "." + "E";
                 }
             } else if (checkers.checkStraight(hand.size() - 2, -1)) {
                 if(ayy.contains("D")){
-                    ayy = checkers.highCard(hasAce) + "." + checkers.highSuit() + "." + "A";
+                    ayy = checkers.highCard(hasAce) + "." + "A";
                 } else if(!ayy.contains("B")){
                     ayy = checkers.highCard(hasAce) + "." + "E";
                 }
@@ -116,4 +128,9 @@ public class Player {
     public void showHand(){
         Main.printList(hand);
     }
+
+    public void setSkip(){ skip = true; }
+    public boolean getSkip(){ return skip; }
+    public void skip(){ skip = false; }
+    public boolean getOut(){ return out; }
 }

@@ -79,22 +79,6 @@ public class HandChecker {
         }
         return false;
     }
-    //TODO: may need to change later to find highest suit
-
-    /**
-     * @return The value of the highest suit
-     */
-    public int highSuit(){
-        if(hand.get(0).getType().equals("C")){
-            return 1;
-        } else if(hand.get(0).getType().equals("D")){
-            return 2;
-        } else if(hand.get(0).getType().equals("H")){
-            return 3;
-        } else {
-            return 4;
-        }
-    }
 
     /**
      * @param size The size of the pair to find

@@ -1,6 +1,7 @@
 package poker;
 
 import card.Card;
+import game.Main;
 import game.Player;
 
 import java.util.ArrayList;
@@ -10,7 +11,7 @@ import java.util.ArrayList;
 public abstract class Poker {
 	private ArrayList<Card> deck = new ArrayList<Card>();
 	private Player users[];
-	private int maxBet, game, turn;
+	private int maxBet, game, turn, bet;
     private double pool;
 	public Poker(){
 		for(int i = 1; i < 14; i++){
@@ -69,6 +70,89 @@ public abstract class Poker {
 			i.showHand();
 		}
 	}
+
+    protected void betPhase(int what){
+        int raised = -1;
+        if(users[getTurn()].getSkip()){
+            changeTurn(getTurn() + 1);
+            users[getTurn()].skip();
+            betPhase(Integer.parseInt(Main.getChoice("Player " + getTurn() + "'s turn. 1: Call; 2: Raise; 3: Fold")));
+        } else if(users[getTurn()].getOut()){
+            changeTurn(getTurn() + 1);
+            betPhase(Integer.parseInt(Main.getChoice("Player " + getTurn() + "'s turn. 1: Call; 2: Raise; 3: Fold")));
+        }
+        switch(what){
+            case 1:
+                getUser(getTurn()).call(bet);
+                pool += bet;
+                break;
+            case 2:
+                bet = getUser(getTurn()).raise(bet);
+                raised = getTurn();
+                pool += bet;
+                break;
+            case 3:
+                deck.addAll(0, getUser(getTurn()).fold());
+                users[getTurn()].killHand();
+                break;
+            case 4:
+                int all = users[getTurn()].allIn(pool);
+                if (all > bet){
+                    raised = getTurn();
+                    bet = all;
+                }
+                pool += all;
+                break;
+        }
+        changeTurn(getTurn() + 1);
+        if(raised != -1) {
+            users[raised].setSkip();
+            changeTurn(0);
+        }
+        if(getTurn() != getUserAmount())
+            betPhase(Integer.parseInt(Main.getChoice("Player " + getTurn() + "'s turn. 1: Call; 2: Raise; 3: Fold")));
+        //else
+            //doPartOne(Integer.parseInt(Main.getChoice("Player " + getTurn() + "'s turn. 1: Call; 2: Raise; 3: Fold")));
+    }
+
+	public Player findWinner(Player win, Player lose, int i){
+        String winHand = win.checkHand(), loseHand = lose.checkHand();
+        if(winHand.substring(winHand.length() - 1, winHand.length()).compareTo(loseHand.substring(loseHand.length() - 1, loseHand.length())) < 0){
+            if(i == users.length - 1)
+                return win;
+            return findWinner(win, users[++i], ++i);
+        } else if(winHand.substring(winHand.length() - 1, winHand.length()).compareTo(loseHand.substring(loseHand.length() - 1, loseHand.length())) > 0){
+            if(i == users.length - 1)
+                return lose;
+            return findWinner(lose, users[++i], ++i);
+        } else {
+            if(winHand.length() > 4){
+                if(Integer.parseInt(winHand.substring(winHand.indexOf(".") + 1, winHand.lastIndexOf("."))) > Integer.parseInt(loseHand.substring(loseHand.indexOf(".") + 1, loseHand.lastIndexOf(".")))){
+                    if(i == users.length - 1)
+                        return win;
+                    return findWinner(win, users[++i], ++i);
+                } else if(Integer.parseInt(winHand.substring(winHand.indexOf(".") + 1, winHand.lastIndexOf("."))) < Integer.parseInt(loseHand.substring(loseHand.indexOf(".") + 1, loseHand.lastIndexOf(".")))){
+                    if(i == users.length - 1)
+                        return lose;
+                    return findWinner(lose, users[++i], ++i);
+                }
+            }
+            if(Integer.parseInt(winHand.substring(0, 2)) > Integer.parseInt(loseHand.substring(0, 2))){
+                if(i == users.length - 1)
+                    return win;
+                return findWinner(win, users[++i], ++i);
+            } else if(Integer.parseInt(winHand.substring(0, 2)) < Integer.parseInt(loseHand.substring(0, 2))){
+                if(i == users.length - 1)
+                    return lose;
+                return findWinner(lose, users[++i], ++i);
+            } else {
+                if(i == users.length - 1)
+                    return null;
+                //WORSE CASE SCENARIO; I HAVE NO IDEA WHAT DO
+                return findWinner(lose, users[++i], ++i);
+            }
+        }
+    }
 	/**
 	 * @param bet The number to set the max bet to
 	 */

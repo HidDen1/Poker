@@ -22,6 +22,8 @@ public class Main {
 		game.dealToPlayers(5);
 		System.out.println(game.getUser(0).checkHand());
         System.out.println(game.getUser(1).checkHand());
+        System.out.println("I".compareTo("H"));
+		System.out.println(game.findWinner(game.getUser(0), game.getUser(1), 1).checkHand());
 
 	}
  	/**
