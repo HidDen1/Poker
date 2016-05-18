@@ -15,9 +15,9 @@ public class PokerFiveCard extends Poker {
             if(isAllFolded() == -1) {
                 for (int i = 0; i < getUserAmount(); i++) {
                     if (getUser(i).hasAce())
-                        tradeCards(4, getUser(i));
+                        tradeCards(4, getUser(i), 4);
                     else
-                        tradeCards(3, getUser(i));
+                        tradeCards(3, getUser(i), 3);
                 }
                 changeTurn(0);
                 betPhase();
@@ -42,22 +42,25 @@ public class PokerFiveCard extends Poker {
 
     }
 
-    private void tradeCards(int t, Player user) {
+    private void tradeCards(int t, Player user, int p) {
         if (!user.getOut()) {
             int choice = Integer.parseInt(Main.getChoice("It is player " + getTurn() + "'s trade turn. Your cards are: " + user.getHand().toString().substring(1, user.getHand().toString().length() - 1) + ". You can trade out " + t + " cards. \nGive the number of the card you want to trade out or -1 to end your turn."));
             if (choice != -1 && choice < 5 && choice > -1) {
                 getDeck().add(0, user.tradeOutCard(choice));
-                user.dealTo(getDeck().remove(getDeck().size() - 1));
                 if (t - 1 == 0) {
                     System.out.println("Turn ended");
+                    for(int i = 0; i < p; i++)
+                        user.dealTo(getDeck().remove(getDeck().size() - 1));
                     changeTurn(getTurn() + 1);
                 } else
-                    tradeCards(--t, user);
+                    tradeCards(--t, user, p);
             } else if (choice == -1) {
                 System.out.println("Turn ended");
+                for(int i = 0; i < p - t; i++)
+                    user.dealTo(getDeck().remove(getDeck().size() - 1));
                 changeTurn(getTurn() + 1);
             } else if (choice > 4 || choice < 0)
-                tradeCards(t, user);
+                tradeCards(t, user, p);
         } else
             changeTurn(getTurn() + 1);
     }
