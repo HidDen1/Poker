@@ -1,6 +1,7 @@
 package poker;
 
-import card.Card;
+import game.Card;
+import game.HandChecker;
 import game.Main;
 import game.Player;
 
@@ -9,21 +10,22 @@ import java.util.ArrayList;
  * The class containing the main poker
  */
 public abstract class Poker {
-	private ArrayList<Card> deck = new ArrayList<Card>();
+	private ArrayList<Card> deck = new ArrayList<>();
 	private Player users[];
-	private int maxBet, game, turn;
+	private int maxBet, turn;
     private double pool, bet;
-	public Poker(){
+	Poker(){
 		for(int i = 1; i < 14; i++){
 			for(int j = 0; j < 4; j++){
 				if(i == 1)
 					deck.add(new Card(new int[]{i, 14}, Card.TYPES[j]));
-				deck.add(new Card(new int[]{i}, Card.TYPES[j]));
+                else
+				    deck.add(new Card(new int[]{i}, Card.TYPES[j]));
 			}
 		}
 	}
 
-    public int isVictory(){
+    int isVictory(){
         int got = 0, count = 0;
         for(Player i : users){
             if(!i.isBankrupt()) {
@@ -31,13 +33,27 @@ public abstract class Poker {
                 count++;
             }
         }
-        if(count == 1){
+        if(count == 1)
             return got;
-        } else
+        else
             return -1;
     }
 
-    protected void changeTurn(int change){ turn = change; }
+    int isAllFolded(){
+        int got = 0, count = 0;
+        for(Player i : users){
+            if(!i.getOut()){
+                got = count;
+                count++;
+            }
+        }
+        if(count == 1)
+            return got;
+        else
+            return -1;
+    }
+
+    void changeTurn(int change){ turn = change; }
 
 	public void playGame(){
         createPlayers(Integer.parseInt(Main.getChoice("How many players will be in this poker? (up to 5)")));
@@ -47,7 +63,7 @@ public abstract class Poker {
 	/**
 	 * Shuffles the Deck
 	 */
-	public void shuffle(){
+    void shuffle(){
 		for(int i = 0; i < deck.size(); i++){
 			int replace = (int)((deck.size() - 1) * Math.random() - 1);
 			Card rep = deck.get(i);
@@ -59,82 +75,100 @@ public abstract class Poker {
 	 * Creates the players
 	 * @param num The amount of players
 	 */
-	public void createPlayers(int num){
+    private void createPlayers(int num){
         users = new Player[num];
         for(int i = 0; i < num; i++)
-            users[i] = new Player();
+            users[i] = new Player(i);
     }
 	/**
 	 * Deals cards to the player
 	 */
-	public void dealToPlayers(int amt){
-		ArrayList<Card> toDeal = new ArrayList<Card>();
+    void dealToPlayers(int amt){
+		ArrayList<Card> toDeal = new ArrayList<>();
 		
-		for(Player i : users){
+		for(int i = 0; i < users.length; i++){
 			toDeal.clear();
 			for(int j = 0; j < amt; j++){
 				toDeal.add(deck.remove(deck.size() - 1));
 			}
-			i.dealTo(toDeal);
+			users[i].dealTo(toDeal);
+            int p = new HandChecker(toDeal).hasWildCard();
+            while(p != -1){
+                toDeal.get(p).setName(Main.getChoice("Player " + i +". You have a wildcard! Give it a new face name(aka '2' or 'King') Your current hand looks like this " + toDeal.toString().substring(1, toDeal.toString().length() - 1)));
+                toDeal.get(p).setType(Main.getChoice("Give this card a suit(Spades, Clubs...)"));
+                p = new HandChecker(toDeal).hasWildCard();
+            }
 		}
 	}
 
-	public void dealOutWinnings(Player winner){
-		if(winner.getMaxEarn() != 0){
-            winner.setCash(winner.getCash() + winner.getMaxEarn());
+	void dealOutWinnings(Player winner){
+        if(winner == null){
+            System.out.println("No one won. Pot is split");
+            users[0].setCash(users[0].getCash() + (pool / 2));
+            users[1].setCash(users[1].getCash() + (pool / 2));
             pool = 0;
         } else {
-            winner.setCash(winner.getCash() + pool);
-            pool = 0;
+            System.out.print("Player " + winner.getPlacement() + " was the winner and won ");
+            if (winner.getMaxEarn() != 0) {
+                System.out.println(winner.getMaxEarn());
+                winner.setCash(winner.getCash() + winner.getMaxEarn());
+                pool = 0;
+            } else {
+                System.out.println(pool);
+                winner.setCash(winner.getCash() + pool);
+                pool = 0;
+            }
         }
 	}
 
     protected void betPhase(){
         if(users[getTurn()].getSkip()){
-            changeTurn(getTurn() + 1);
             users[getTurn()].skip();
-        } else if(users[getTurn()].getOut()){
             changeTurn(getTurn() + 1);
-        }
-        int raised = -1, what = Integer.parseInt(Main.getChoice("Player " + getTurn() + "'s turn. You have " + users[getTurn()].getCash() + ". Your cards are: \n" + users[getTurn()].getHand().toString().substring(1, users[getTurn()].getHand().toString().length() -1) + "\nThe current bet is " + bet + "\n1: Call; 2: Raise; 3: Fold, 4: All in"));
-        switch(what){
-            case 1:
-                getUser(getTurn()).call(bet);
-                pool += bet;
-                break;
-            case 2:
-                bet = getUser(getTurn()).raise(bet);
-                raised = getTurn();
-                pool += bet;
-                break;
-            case 3:
-                deck.addAll(0, getUser(getTurn()).fold());
-                users[getTurn()].killHand();
-                break;
-            case 4:
-                double all = users[getTurn()].allIn(pool);
-                if (all > bet){
+        } else if(users[getTurn()].getOut())
+            changeTurn(getTurn() + 1);
+        else if(users[getTurn()].isAllin() || users[getTurn()].getCash() == 0)
+            changeTurn(getTurn() + 1);
+        if(getTurn() != getUserAmount() && isAllFolded() == -1) {
+            int raised = -1, what = Integer.parseInt(Main.getChoice("Player " + getTurn() + "'s turn. You have " + users[getTurn()].getCash() + ". Your cards are: \n" + users[getTurn()].getHand().toString().substring(1, users[getTurn()].getHand().toString().length() - 1) + "\nThe current bet is " + bet + "\n1: Call; 2: Raise; 3: Fold, 4: All in"));
+            switch (what) {
+                case 1:
+                    getUser(getTurn()).call(bet);
+                    pool += bet;
+                    break;
+                case 2:
+                    bet = getUser(getTurn()).raise(bet, maxBet);
                     raised = getTurn();
-                    bet = all;
-                }
-                pool += all;
-                break;
-        }
-        System.out.println(getTurn() + "|" + getUserAmount());
-        changeTurn(getTurn() + 1);
-        System.out.println(getTurn() + "|" + getUserAmount());
-        if(raised != -1) {
-            users[raised].setSkip();
+                    pool += bet;
+                    break;
+                case 3:
+                    deck.addAll(0, getUser(getTurn()).fold());
+                    users[getTurn()].killHand();
+                    break;
+                case 4:
+                    double all = users[getTurn()].allIn(pool);
+                    if (all > bet) {
+                        raised = getTurn();
+                        bet = all;
+                    }
+                    pool += all;
+                    break;
+            }
+            changeTurn(getTurn() + 1);
+            if (raised != -1) {
+                users[raised].setSkip();
+                changeTurn(0);
+            }
+            if (getTurn() != getUserAmount())
+                betPhase();
+            //else
+            //doPartOne(Integer.parseInt(Main.getChoice("Player " + getTurn() + "'s turn. 1: Call; 2: Raise; 3: Fold")));
             changeTurn(0);
         }
-        if(getTurn() != getUserAmount())
-            betPhase();
-        //else
-            //doPartOne(Integer.parseInt(Main.getChoice("Player " + getTurn() + "'s turn. 1: Call; 2: Raise; 3: Fold")));
         changeTurn(0);
     }
 
-	public Player findWinner(Player win, Player lose, int i){
+	Player findWinner(Player win, Player lose, int i){
         String winHand = win.checkHand(), loseHand = lose.checkHand();
         if(winHand.substring(winHand.length() - 1, winHand.length()).compareTo(loseHand.substring(loseHand.length() - 1, loseHand.length())) < 0){
             if(i == users.length - 1)
@@ -175,32 +209,20 @@ public abstract class Poker {
 	/**
 	 * @param bet The number to set the max bet to
 	 */
-	public void setMaxBet(int bet){ maxBet = bet; }
-	/**
-	 * When a player discards a card, it must go back in the deck
-	 * @param b the card(s) to go back
-	 */
-	public void backToDeck(ArrayList<Card> b){ deck.addAll(0, b); }
-	/**
-	 * 1 = 5 card; 2 = 5 card w/ wildcard; 3 = Texas hold em;
-	 * @param g the poker to be set
-	 */
-	public void setGame(int g){ game = g; }
+    private void setMaxBet(int bet){ maxBet = bet; }
 
-    public void setCash(double c){
+    private void setCash(double c){
         for(Player i : users){
             i.setCash(c);
         }
     }
 
-	/**
-	 * TO BE MADE PROTECTED; FOR DEBUG
-	 */
-	public ArrayList<Card> getDeck(){ return(deck); }
-	//TODO MAKE PROTECTED
-    public Player getUser(int i){ return users[i]; }
+	ArrayList<Card> getDeck(){ return(deck); }
+    Player getUser(int i){ return users[i]; }
 
-    protected int getUserAmount(){ return users.length; }
+    int getUserAmount(){ return users.length; }
 
-	protected int getTurn(){ return turn; }
+	int getTurn(){ return turn; }
+
+    void setBet(double bet){ this.bet = bet; }
 }
