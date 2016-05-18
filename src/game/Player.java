@@ -60,8 +60,16 @@ public class Player {
     }
 
     //possibly have these return things
-    public void call(double bet) {
-        cash -= bet;
+    public double call(double bet) {
+        if(bet >= cash){
+            double rep = cash;
+            cash = 0;
+            allin = true;
+            return rep;
+        } else {
+            cash -= bet;
+            return bet;
+        }
     }
 
     public boolean isBankrupt(){ return cash == 0; }
@@ -73,10 +81,12 @@ public class Player {
 
     public int raise(double bet, int maxBet) {
         int raise = Integer.parseInt(getChoice("What would you like to raise the bet of " + bet + " too?"));
-        if(raise > maxBet)
+        if(raise > maxBet || raise > cash)
             return raise(bet, maxBet);
         else {
             cash -= raise;
+            if(cash == 0)
+                allin = true;
             return raise;
         }
     }

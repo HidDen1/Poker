@@ -133,8 +133,8 @@ public abstract class Poker {
             int raised = -1, what = Integer.parseInt(Main.getChoice("Player " + getTurn() + "'s turn. You have " + users[getTurn()].getCash() + ". Your cards are: \n" + users[getTurn()].getHand().toString().substring(1, users[getTurn()].getHand().toString().length() - 1) + "\nThe current bet is " + bet + "\n1: Call; 2: Raise; 3: Fold, 4: All in"));
             switch (what) {
                 case 1:
-                    getUser(getTurn()).call(bet);
-                    pool += bet;
+                    double mun = getUser(getTurn()).call(bet);
+                    pool += mun;
                     break;
                 case 2:
                     bet = getUser(getTurn()).raise(bet, maxBet);
